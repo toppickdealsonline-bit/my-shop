@@ -1,0 +1,163 @@
+// src/App.jsx
+import React, { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Header from "./components/Header.jsx";
+import Footer from "./components/Footer.jsx";
+import CartDrawer from "./components/CartDrawer.jsx";
+
+import Home from "./pages/Home.jsx";
+import ProductDetail from "./pages/ProductDetail.jsx";
+import Login from "./pages/Login.jsx";
+import Wishlist from "./pages/Wishlist.jsx";
+import Admin from "./pages/Admin.jsx";
+
+import { DEFAULT_PRODUCTS } from "./data/products.js";
+import useAuth from "./hooks/useAuth.js";
+
+const load = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+export default function App() {
+  // auth hook (example stub)
+  const auth = useAuth();
+
+  // products (static seed)
+  const [products] = useState(DEFAULT_PRODUCTS);
+
+  // cart object keyed by product id { [id]: { ...product, qty } }
+  const [cart, setCart] = useState(() => load("cart_v1", {}));
+
+  // wishlist set or object
+  const [wishlist, setWishlist] = useState(() => load("wishlist_v1", {}));
+
+  // drawer open state - IMPORTANT default false
+  const [cartOpen, setCartOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("cart_v1", JSON.stringify(cart));
+    } catch {}
+  }, [cart]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("wishlist_v1", JSON.stringify(wishlist));
+    } catch {}
+  }, [wishlist]);
+
+  // add to cart (opens cart drawer)
+  function addToCart(product, qty = 1) {
+    // if user not logged in -> redirect to login
+    if (!auth.user) {
+      // simple redirect to login page
+      window.location.href = "/login";
+      return;
+    }
+
+    setCart((prev) => {
+      const next = { ...prev };
+      if (!next[product.id]) next[product.id] = { ...product, qty: 0 };
+      next[product.id].qty += qty;
+      return next;
+    });
+    setCartOpen(true); // open drawer when user adds to cart
+  }
+
+  function addToWishlist(product) {
+    if (!auth.user) {
+      window.location.href = "/login";
+      return;
+    }
+    setWishlist((prev) => ({ ...prev, [product.id]: product }));
+  }
+
+  function updateQty(productId, qty) {
+    setCart((c) => {
+      const next = { ...c };
+      if (!next[productId]) return c;
+      next[productId].qty = Math.max(0, qty);
+      if (next[productId].qty === 0) delete next[productId];
+      return next;
+    });
+  }
+
+  function removeItem(productId) {
+    setCart((c) => {
+      const next = { ...c };
+      delete next[productId];
+      return next;
+    });
+  }
+
+  function clearCart() {
+    setCart({});
+  }
+
+  function total() {
+    return Object.values(cart)
+      .reduce((s, it) => s + it.price * it.qty, 0)
+      .toFixed(2);
+  }
+
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50 text-gray-900">
+        <Header
+          logo="/logo.PNG"
+          wishlistCount={Object.keys(wishlist).length}
+          cartCount={Object.values(cart).reduce((n, it) => n + it.qty, 0)}
+          onCartClick={() => setCartOpen((s) => !s)}
+        />
+
+        <main>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home
+                  products={products}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                />
+              }
+            />
+            <Route
+              path="/product/:id"
+              element={
+                <ProductDetail
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                />
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
+        </main>
+
+        <Footer
+          contact="+91-XXXXXXXXXX"
+          instagram="https://instagram.com/TopPickDeals"
+        />
+
+        <CartDrawer
+          open={cartOpen}
+          onClose={() => setCartOpen(false)}
+          cart={cart}
+          updateQty={updateQty}
+          removeItem={removeItem}
+          clearCart={clearCart}
+          total={total()}
+        />
+      </div>
+    </BrowserRouter>
+  );
+}
