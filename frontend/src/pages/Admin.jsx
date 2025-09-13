@@ -10,7 +10,7 @@ export default function Admin({ products = [], setProducts = () => {} }) {
           <div key={p.id} className="bg-white p-4 rounded shadow">
             <div className="flex justify-between">
               <div>
-                <div className="font-medium">{p.name}</div>
+                <div className="font-medium">{p.title}</div>
                 <div className="text-sm text-gray-500">{p.category}</div>
               </div>
               <div className="flex gap-2">

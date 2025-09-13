@@ -1,14 +1,55 @@
-import React from "react";
+// frontend/src/pages/ProductDetail.jsx
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { DEFAULT_PRODUCTS } from "../data/products.js";
+import { fetchProductBySlug } from "../lib/api.js";
 
 export default function ProductDetail({
   addToCart = () => {},
   addToWishlist = () => {},
 }) {
-  const { id } = useParams();
-  const product = DEFAULT_PRODUCTS.find((p) => p.id === id);
+  const { slug } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const data = await fetchProductBySlug(slug);
+        if (!mounted) return;
+        if (!data) {
+          setProduct(null);
+        } else {
+          const p = {
+            id: data.id,
+            slug: data.slug ?? data.id,
+            title: data.title,
+            price: data.price,
+            category: data.category,
+            images: Array.isArray(data.images)
+              ? data.images
+              : data.images
+              ? [data.images]
+              : [],
+            desc: data.description ?? data.desc ?? "",
+            _raw: data,
+          };
+          setProduct(p);
+        }
+      } catch (err) {
+        console.error("Error loading product:", err);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
+  if (loading) return <div className="container">Loading...</div>;
   if (!product)
     return (
       <div className="container">

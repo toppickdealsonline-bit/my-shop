@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
@@ -10,11 +11,11 @@ import ProductDetail from "./pages/ProductDetail.jsx";
 import Login from "./pages/Login.jsx";
 import Wishlist from "./pages/Wishlist.jsx";
 
-import { DEFAULT_PRODUCTS } from "./data/products.js";
+import { fetchProducts } from "./lib/api.js";
 
-/* App: safe, self-contained (no external hooks). */
+/* App: top-level state & data fetching */
 export default function App() {
-  // simple auth stub stored locally
+  // auth stored locally
   const [user, setUser] = useState(() => {
     try {
       const raw = localStorage.getItem("tpd_user_v1");
@@ -37,8 +38,48 @@ export default function App() {
     } catch {}
   }
 
-  const [products] = useState(DEFAULT_PRODUCTS);
+  // products from backend
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState(null);
 
+  useEffect(() => {
+    let mounted = true;
+    setProductsLoading(true);
+    fetchProducts()
+      .then((items) => {
+        if (!mounted) return;
+        // normalize shape so UI expects .desc, .images, .slug etc.
+        const normalized = items.map((p) => ({
+          id: p.id,
+          slug: p.slug ?? p.id,
+          title: p.title,
+          price: p.price,
+          category: p.category,
+          images: Array.isArray(p.images)
+            ? p.images
+            : p.images
+            ? [p.images]
+            : [],
+          desc: p.description ?? p.desc ?? "",
+          _raw: p,
+        }));
+        setProducts(normalized);
+        setProductsError(null);
+      })
+      .catch((err) => {
+        console.error("Failed fetching products:", err);
+        setProductsError(err?.message ?? String(err));
+      })
+      .finally(() => {
+        if (mounted) setProductsLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // CART & WISHLIST persisted locally
   const [cart, setCart] = useState(() => {
     try {
       const raw = localStorage.getItem("tpd_cart_v1");
@@ -70,7 +111,6 @@ export default function App() {
     } catch {}
   }, [wishlist]);
 
-  // require auth helper (redirects to /login when not signed in)
   function requireAuth(action) {
     if (!user) {
       window.location.href = "/login";
@@ -124,6 +164,10 @@ export default function App() {
       .toFixed(2);
   }
 
+  function findProductById(id) {
+    return products.find((p) => p.id === id) || null;
+  }
+
   return (
     <div className="app-root">
       <Header
@@ -142,13 +186,16 @@ export default function App() {
             element={
               <Home
                 products={products}
+                loading={productsLoading}
+                error={productsError}
                 addToCart={addToCart}
                 addToWishlist={addToWishlist}
               />
             }
           />
+
           <Route
-            path="/product/:id"
+            path="/product/:slug"
             element={
               <ProductDetail
                 addToCart={addToCart}
@@ -156,6 +203,7 @@ export default function App() {
               />
             }
           />
+
           <Route
             path="/login"
             element={
@@ -198,6 +246,7 @@ export default function App() {
         removeItem={removeItem}
         clearCart={clearCart}
         total={total()}
+        findProductById={findProductById}
       />
     </div>
   );

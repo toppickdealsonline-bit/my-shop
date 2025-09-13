@@ -1,4 +1,6 @@
+// frontend/src/pages/Wishlist.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function Wishlist({ items = [], remove = () => {} }) {
   return (
@@ -10,25 +12,15 @@ export default function Wishlist({ items = [], remove = () => {} }) {
         <div className="grid">
           {items.map((it) => (
             <div className="card" key={it.id}>
-              <a
-                href={`/product/${it.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="media-link"
-              >
+              <Link to={`/product/${it.slug ?? it.id}`} className="media-link">
                 <div className="media">
                   <img src={it.images[0]} alt={it.title} />
                 </div>
-              </a>
+              </Link>
               <div className="body">
-                <a
-                  href={`/product/${it.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="title"
-                >
+                <Link to={`/product/${it.slug ?? it.id}`} className="title">
                   {it.title}
-                </a>
+                </Link>
                 <div className="meta">{it.category}</div>
                 <div style={{ marginTop: "auto" }}>
                   <div className="price">₹{it.price}</div>

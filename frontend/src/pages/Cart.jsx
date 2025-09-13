@@ -1,7 +1,7 @@
-// src/pages/Cart.jsx
+// frontend/src/Cart.jsx
 import React from "react";
 
-export default function Cart({ cart, updateQty, removeFromCart, checkout }) {
+export default function Cart({ cart, updateQty, removeItem, checkout }) {
   const items = Object.values(cart);
   return (
     <div className="p-4">
@@ -22,7 +22,7 @@ export default function Cart({ cart, updateQty, removeFromCart, checkout }) {
               />
               <div className="flex-1">
                 <div className="font-medium">{it.title}</div>
-                <div className="text-xs text-gray-500">${it.price} each</div>
+                <div className="text-xs text-gray-500">₹{it.price} each</div>
                 <div className="mt-2 flex items-center gap-2">
                   <button
                     className="px-2 py-1 border rounded"
@@ -39,7 +39,7 @@ export default function Cart({ cart, updateQty, removeFromCart, checkout }) {
                   </button>
                   <button
                     className="ml-3 text-sm text-red-600"
-                    onClick={() => removeFromCart(it.id)}
+                    onClick={() => removeItem(it.id)}
                   >
                     Remove
                   </button>
@@ -47,7 +47,7 @@ export default function Cart({ cart, updateQty, removeFromCart, checkout }) {
               </div>
               <div className="text-right">
                 <div className="font-semibold">
-                  ${(it.price * it.qty).toFixed(2)}
+                  ₹{(it.price * it.qty).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -56,7 +56,7 @@ export default function Cart({ cart, updateQty, removeFromCart, checkout }) {
           <div className="flex justify-between items-center bg-white p-4 rounded shadow">
             <div className="font-semibold">Subtotal</div>
             <div className="text-lg font-bold">
-              ${items.reduce((s, it) => s + it.price * it.qty, 0).toFixed(2)}
+              ₹{items.reduce((s, it) => s + it.price * it.qty, 0).toFixed(2)}
             </div>
           </div>
 
