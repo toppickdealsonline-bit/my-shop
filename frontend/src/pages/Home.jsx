@@ -1,37 +1,18 @@
-// frontend/src/pages/Home.jsx
-import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { fetchProducts } from "./data/products.js";
 
-export default function Home({
-  products = [],
-  loading = false,
-  error = null,
-  addToCart = () => {},
-  addToWishlist = () => {},
-}) {
-  const [q, setQ] = useState("");
-  const [cat, setCat] = useState("All");
+export default function App() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = useMemo(
-    () => [
-      "All",
-      ...Array.from(
-        new Set(products.map((p) => p.category || "Uncategorized"))
-      ),
-    ],
-    [products]
-  );
+  useEffect(() => {
+    fetchProducts()
+      .then(setProducts)
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const filtered = products.filter((p) => {
-    if (cat !== "All" && p.category !== cat) return false;
-    if (q && !`${p.title} ${p.desc}`.toLowerCase().includes(q.toLowerCase()))
-      return false;
-    return true;
-  });
-
-  if (loading) return <div className="container">Loading products…</div>;
-  if (error)
-    return <div className="container">Failed to load products: {error}</div>;
+  if (loading) return <p>Loading products...</p>;
 
   return (
     <>

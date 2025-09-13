@@ -1,82 +1,14 @@
-export const DEFAULT_PRODUCTS = [
-  {
-    id: "p1",
-    title: "Cable Management Box - Amazon Basics",
-    price: 399,
-    category: "Accessories",
-    images: ["/cable box 1.jpg", "/cable box 2.jpg", "/cable box 3.jpg"],
-    desc: "Efficient Cable Storage. Organize power strips, chargers and wires for clutter-free spaces.",
-  },
-  {
-    id: "p2",
-    title: "Pen Stand with Planter (eo)",
-    price: 299,
-    category: "Office",
-    images: ["/pen stand 1.jpg", "/pen stand 2.jpg", "/pen stand 3.jpg"],
-    desc: "Desk organizer with self-watering plant pot, phone slot and glasses holder.",
-  },
-  {
-    id: "p3",
-    title: "Davidoff Cool Water EDT",
-    price: 5015,
-    category: "Fragrance",
-    images: ["/perfume 1.jpg", "/perfume 2.jpg", "/perfume 3.jpg"],
-    desc: "Fresh aquatic scent, long-lasting classic fragrance for everyday use.",
-  },
-  {
-    id: "p4",
-    title: "Cello Fruit Infuser Glass Bottle 750ml",
-    price: 269,
-    category: "Kitchen",
-    images: ["/infuser 1.jpg", "/infuser 2.jpg", "/infuser 3.jpg"],
-    desc: "Leak-proof infuser bottle for flavored water, gym, office, and travel.",
-  },
-  {
-    id: "p5",
-    title: "Astronaut Planet Ceramic Mug (NYRWANA)",
-    price: 547,
-    category: "Home",
-    images: ["/coffee mug 1.jpg", "/coffee mug 2.jpg", "/coffee mug 3.jpg"],
-    desc: "3D creative planet mug with lid and spoon - great gift choice.",
-  },
-  {
-    id: "p6",
-    title: "MR WAGON - Car Push Start Button Cover",
-    price: 699,
-    category: "Auto",
-    images: ["/car button 1.jpg", "/car button 2.jpg", "/car button 3.jpg"],
-    desc: "Decorative cover protects and styles your car's push start button.",
-  },
-  {
-    id: "p7",
-    title: "Boot Dryer with 360° Heat Blower",
-    price: 1299,
-    category: "Appliances",
-    images: ["/boot dryer 1.jpg", "/boot dryer 2.jpg", "/boot dryer 3.jpg"],
-    desc: "Dry boots, gloves and helmets with adjustable timers and silent fan.",
-  },
-  {
-    id: "p8",
-    title: "Pure Aroma Charcoal Mini Humidifier",
-    price: 649,
-    category: "Wellness",
-    images: ["/diffuser 1.jpg", "/diffuser 2.jpg", "/diffuser 3.jpg"],
-    desc: "Portable cool-mist humidifier with simulated charcoal fire effect.",
-  },
-  {
-    id: "p9",
-    title: "Women Foil Print A-Line Kurta (White)",
-    price: 500,
-    category: "Clothing",
-    images: ["/white top 1.jpg", "/white top 2.jpg", "/white top 3.jpg"],
-    desc: "Calf-length kurta with embroidered yoke. 100% viscose, machine wash cold.",
-  },
-  {
-    id: "p10",
-    title: "Women Polka-Dot A-Line Kurta (Pink)",
-    price: 524,
-    category: "Clothing",
-    images: ["/pink top 1.jpg", "/pink top 2.jpg", "/pink top 3.jpg"],
-    desc: "Polka-dot kurta with pintuck accents and sequin details.",
-  },
-];
+// frontend/src/data/products.js
+export async function fetchProducts() {
+  const base = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+  const res = await fetch(`${base}/api/products`);
+  if (!res.ok) throw new Error("Failed to load products");
+  return res.json();
+}
+
+export async function fetchProductBySlug(slug) {
+  const base = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+  const res = await fetch(`${base}/api/products/slug/${slug}`);
+  if (!res.ok) throw new Error("Product not found");
+  return res.json();
+}
